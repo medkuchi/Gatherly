@@ -96,24 +96,23 @@ struct EventDetailsView: View {
             
             ToolbarItem(placement:.topBarTrailing){
                 Button{
+                    
                     isShowingDialog=true
                 }label:{
                     Image(systemName:"ellipsis")}
                 .foregroundStyle(.white)
                 .font(.title)
                 .padding(.trailing,10)
-                
+        
             }
         }
-        .confirmationDialog("Delete", isPresented: $isShowingDialog, titleVisibility: .visible){
-            Button("Delete", role: .destructive){
+        .confirmationDialog("Delete", isPresented: $isShowingDialog){
+            NavigationLink("Edit Event"){
+                EditEventView()
+            }
+            NavigationLink("Delete"){
                 
             }
-            Button("Cancel", role: .cancel){
-                isShowingDialog=false
-            }
-        } message: {
-            Text("Do you want to delete this event?")
         }
     }
     

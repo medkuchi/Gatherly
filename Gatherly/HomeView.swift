@@ -9,42 +9,45 @@ import SwiftUI
 
 struct HomeView: View {
     @State var events: [Event] = []
+    @State private var vm=EventsViewModel()
     var body: some View {
-        VStack{
-            ForEach(events,id: \.id) { event in
+        NavigationStack{
+            VStack{
                 
-                NavigationLink{
-                    EventDetailsView(event:event)
-                }label:{
-                    CardView(event:event)
+                let columns = [GridItem(.flexible(), spacing: 15), GridItem(.flexible(), spacing: 15)]
+                ScrollView{
+                    LazyVGrid(columns: columns, spacing:15){
+                        ForEach(vm.filteredEventIndices,id: \.self) { index in
+                            NavigationLink{
+                                EventDetailsView(event:vm.events[index])
+                            }label:{
+                                CardView(event:vm.events[index])
+                            }
+                        }
+                    }
+                    
+                    .navigationTitle("Home")
+                    .toolbar{
+                        ToolbarItem(placement:.topBarTrailing){
+                            NavigationLink("+ Create Event"){
+                                AddEventView()
+                            }
+                        }
+                    }
+                    .task {
+                        do {
+                            try await vm.fetchEvents()
+                        } catch {
+                            print("there was an error: \(error.localizedDescription)")
+                        }
+                    }
+                    .searchable(text: $vm.searchfor)
                 }
             }
         }
-        
-        .navigationTitle("Home")
-        .task{
-            do{
-                events=try await fetchEvents()
-            }catch{
-                print("Unable to fetch events")
-            }
-        }
     }
 }
 
-
-func fetchEvents() async throws->[Event]{
-    guard let url = URL(string: "https://gatherly-backend-q9vm.onrender.com/events") else {
-        throw URLError(.badURL)
-    }
-    let URLSession = URLSession.shared
-    let (data,_) = try await URLSession.data(from: url)
-    let decoder=JSONDecoder()
-    decoder.dateDecodingStrategy = .iso8601
-    let decodedresponse=try decoder.decode(EventResponse.self, from:data)
-    
-    return decodedresponse.events
-}
 
 #Preview {
     NavigationStack{
