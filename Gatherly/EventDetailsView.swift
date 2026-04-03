@@ -9,23 +9,42 @@ import SwiftUI
 
 struct EventDetailsView: View {
     @State private var isShowingDialog = false
+    @Environment(\.dismiss) var dismiss
     let event:Event
     var body: some View {
         
         VStack(alignment:.leading){
             
-            HStack{
-                Spacer()
-                Text("Event Details")
-                    .font(.title)
-                Spacer()
-                
-            }
            
-            Image("Sunset.jpg")
-                .resizable()
-                .frame(width: 400, height: 300)
-            Text("Conference")
+            // check to see if event's image_url property is nil since it's an optional
+            if let imageEvent = event.image_url {
+                // checks to see if image_url is actually a URL
+                if let url = URL(string: imageEvent) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        // when loading, it shows spinner (ProgressView())
+                        case .empty:
+                            ProgressView()
+                        // if loads successfully, shows image, sets it to resizable, and is scaled to Fit
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFit()
+                        // if loading the image fails, show gray box
+                        case .failure:
+                            Rectangle()
+                            .foregroundStyle(.gray)
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                }
+            } else {
+                    // if no image_url property, placeholder is gray box
+                    Rectangle()
+                        .foregroundStyle(.gray)
+            }
+            Text(event.title)
                 .font(.title)
                 .bold()
                 .padding(.leading,10)
@@ -46,32 +65,40 @@ struct EventDetailsView: View {
                     .padding(.vertical,3)
             }
             
-            Text("Charlotte Convention Center, Charlotte, NC")
+            Text(event.location)
                 .foregroundStyle(.secondary)
                 .padding(.leading,10)
-            Text("__________________________________________")
-                .padding(.leading,10)
+            Divider().overlay(.white)
             
             Text("Description")
                 .font(.title3)
                 .padding(.vertical,5)
                 .padding(.leading,5)
-            Text("-------------Add in description here -------------- ")
+            Text("\(event.description)")
                 .foregroundStyle(.secondary)
             VStack{
                 Spacer()
                 HStack{
                     Spacer()
                     Button{
+                        dismiss()
                         
                     }label:{
-                        Text("RSVP")
-                            .font(.title)
-                            .foregroundStyle(.white)
-                            .bold()
-                            .clipShape(RoundedRectangle(cornerRadius:20))
-                        // ,stroke(Color.white, lineWidth: 2)
-                        //add cyan outline
+                        ZStack{
+                            
+                            Text("RSVP")
+                                .font(.title)
+                                .foregroundStyle(.white)
+                                .bold()
+                                .clipShape(RoundedRectangle(cornerRadius:20))
+                                .overlay(
+                                     RoundedRectangle(cornerRadius: 9)
+                                          .stroke(.cyan, lineWidth: 1)
+                                          .frame(width:120,height:50)
+                                )
+                            //.stroke(Color.white, lineWidth:1)
+                            //add cyan outline
+                        }
                     }
                     Spacer()
                 }
@@ -89,20 +116,21 @@ struct EventDetailsView: View {
                 }
                 label:{
                     Image(systemName:"chevron.left") //add .topBarTrailing
-                        .foregroundStyle(.white)
+                        //.foregroundStyle(.white)
                         .font(.title)
                 }
             }
             
             ToolbarItem(placement:.topBarTrailing){
                 Button{
-                    
-                    isShowingDialog=true
+                    Task{
+                        try await EventService.shared.deleteEvent(id:event.id ?? "")
+                        isShowingDialog=true
+                    }
                 }label:{
                     Image(systemName:"ellipsis")}
-                .foregroundStyle(.white)
+                //.foregroundStyle(.white)
                 .font(.title)
-                .padding(.trailing,10)
         
             }
         }
@@ -110,11 +138,14 @@ struct EventDetailsView: View {
             NavigationLink("Edit Event"){
                 EditEventView()
             }
-            NavigationLink("Delete"){
-                
+            Button("Delete Event", role:.destructive){
+                        
             }
         }
+        .navigationTitle("Event Details")
+        .navigationBarTitleDisplayMode(.inline)
     }
+    
     
 }
 #Preview {

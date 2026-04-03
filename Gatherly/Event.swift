@@ -13,8 +13,11 @@ struct Event: Hashable, Identifiable, Codable{
     var title: String
     var location: String
     var description: String
+    // only used for decoding GET requests and showing an Async Image
     var image_url: String?
-    var image:String?
+    
+    // only used for encoding for POST or PUT requests
+    var image: String?
     var timestamp: Date
 }
 

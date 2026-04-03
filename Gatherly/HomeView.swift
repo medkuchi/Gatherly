@@ -15,6 +15,11 @@ struct HomeView: View {
             VStack{
                 
                 let columns = [GridItem(.flexible(), spacing: 15), GridItem(.flexible(), spacing: 15)]
+                Button{
+                    AddEventView()
+                }label:{
+                    Text("+ Create Event")
+                }
                 ScrollView{
                     LazyVGrid(columns: columns, spacing:15){
                         ForEach(vm.filteredEventIndices,id: \.self) { index in
@@ -26,17 +31,10 @@ struct HomeView: View {
                         }
                     }
                     
-                    .navigationTitle("Home")
-                    .toolbar{
-                        ToolbarItem(placement:.topBarTrailing){
-                            NavigationLink("+ Create Event"){
-                                AddEventView()
-                            }
-                        }
-                    }
+                    //.navigationTitle("Home")
                     .task {
                         do {
-                            try await vm.fetchEvents()
+                            vm.events=try await vm.fetchEvents()
                         } catch {
                             print("there was an error: \(error.localizedDescription)")
                         }

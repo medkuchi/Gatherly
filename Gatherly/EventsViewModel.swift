@@ -16,25 +16,24 @@ class EventsViewModel{
         searchfor.isEmpty || events[i].title.localizedCaseInsensitiveContains(searchfor)
     }
     }
-        func fetchEvents() async throws -> [Int] {
+        func fetchEvents() async -> [Event] { //throws was here
             guard let url = URL(string: "https://gatherly-backend-q9vm.onrender.com/events") else {
-                return filteredEventIndices
+                return events
             }
             
             do{
-                let URLSession = URLSession.shared
-                let (data,_) = try await URLSession.data(from: url)
+                let (data,_) = try await URLSession.shared.data(from: url)
                 let decoder=JSONDecoder()
                 decoder.dateDecodingStrategy = .iso8601
                 let decodedresponse=try decoder.decode(EventResponse.self, from:data)
                 events=decodedresponse.events
                 
-                return filteredEventIndices
+                return events
                 
             }catch{
                 print("Unable to fetch events")
-                return filteredEventIndices
             }
+            return events
         }
        
     }

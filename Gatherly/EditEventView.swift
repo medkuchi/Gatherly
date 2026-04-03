@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct EditEventView: View {
     @Bindable var evm=EditEventsViewModel()
@@ -20,37 +21,21 @@ struct EditEventView: View {
                 Spacer()
             }
             HStack{
-                Button{
-                    
+                PhotosPicker(selection: $evm.selectedPhoto, matching: .images) {
+                    Image(systemName: "plus")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 35)
+                    .padding(20)
+                    .background(.thinMaterial)
                 }
-                label:{
-                    ZStack{
-                        RoundedRectangle(cornerRadius:0)
-                            .stroke(Color.gray, lineWidth:1)
-                            .frame(width:100,height:100)
-                        
-                        Image(systemName:"plus")
-                            .font(.largeTitle)
-                    }
-                    .padding(.horizontal,15)
+                .task(id: evm.selectedPhoto) {
+                    await evm.loadImage()
                 }
-                Button{
-                }
-                label:{
-                    ZStack{
-                        RoundedRectangle(cornerRadius:0)
-                            .stroke(Color.gray, lineWidth:1)
-                            .frame(width:100,height:100)
-//                        if let ImageName=$image_url{
-//                            Image(ImageName)
-//                                .resizable()
-//                                .frame(width:100,height:100)
-//                        }
-                        Image("\($evm.image_url)")
-                            .resizable()
-                            .frame(width:100,height:100)
-                    }
-                }
+                evm.image?
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 75)
             }
             Text("Event Title")
                 .font(.title3)
@@ -96,7 +81,9 @@ struct EditEventView: View {
             HStack{
                 Spacer()
                 Button{
-                    //let newevent=Event(title:$evm.title, location: $evm.location, description: $evm.description, image_url:$evm.image_url, timestamp: $evm.timestamp)
+                    Task{
+                        try await EventService.shared.createEvent(title: evm.title, description: evm.description, timestamp: evm.timestamp, location: evm.location, uiImage:evm.uiImage)
+                    }
                 }label:{
                     ZStack{
                         RoundedRectangle(cornerRadius:10)

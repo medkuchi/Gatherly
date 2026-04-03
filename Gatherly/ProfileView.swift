@@ -12,29 +12,26 @@ struct ProfileView: View {
     var body: some View {
         VStack{
             
-            HStack{
                 Button{
                     
                 }
                 label:{
-                    ZStack{
-                        Ellipse()
-                        //.stroke(Color.gray, lineWidth:1)
-                            .frame(width:150,height:150)
-                            .foregroundStyle(.regularMaterial)
                         
-                        
-                        Image(systemName:"plus")
-                            .font(.largeTitle)
-                    }
+                        Image(systemName: "plus")
+                             .font(.largeTitle)
+                             .padding(28)
+                             .background(
+                                  Circle()
+                                       .fill(.thinMaterial)
+                             )
+                             .frame(width: 100)
+                    
                     .padding(.horizontal,15)
                 }
-            }
+            
             .padding(10)
-                HStack{
                     Text("John Smith")
                         .bold()
-                }
                 .padding(20)
             
             HStack(spacing: 0) {
@@ -61,7 +58,6 @@ struct ProfileView: View {
             //        .navigationTitle(Text("Profile"))
             
             
-            .padding(80)
             Spacer()
             
             

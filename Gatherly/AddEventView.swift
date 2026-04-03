@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct AddEventView: View {
-    @Bindable var avm=AddEventViewModel()
+    @Bindable var vm=AddEventViewModel()
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         VStack(alignment:.leading){
@@ -20,26 +22,22 @@ struct AddEventView: View {
                     .padding(.vertical,15)
                 Spacer()
             }
-            HStack{
-                Button{
-                    
+            HStack {
+                PhotosPicker(selection: $vm.selectedPhoto, matching: .images) {
+                    Image(systemName: "plus")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 35)
+                    .padding(20)
+                    .background(.thinMaterial)
                 }
-                label:{
-                    ZStack{
-                        RoundedRectangle(cornerRadius:0)
-                            .stroke(Color.gray, lineWidth:1)
-                            .frame(width:100,height:100)
-                        
-                        Image(systemName:"plus")
-                            .font(.largeTitle)
-                    }
-                    .padding(.horizontal,15)
+                .task(id: vm.selectedPhoto) {
+                    await vm.loadImage()
                 }
-                Button{
-                }
-                label:{
-                    
-                }
+                vm.image?
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 75)
             }
             
             Text("Event Title")
@@ -48,55 +46,68 @@ struct AddEventView: View {
                 .padding(.horizontal,15)
                 .padding(.vertical,5)
             
-            TextField("", text: $avm.title)
+            TextField("Enter event title", text: $vm.title)
                 .padding(.horizontal,15)
                 .padding(.vertical,5)
-            
-            HStack{
+            Divider().overlay(.gray)
                 Text("Location")
                     .font(.title3)
                     .bold()
                     .padding(.horizontal,15)
                     .padding(.vertical,5)
-            }
             
-            TextField("", text: $avm.location)
+            
+            TextField("Choose location of event", text: $vm.location)
                 .padding(.horizontal,15)
                 .padding(.vertical,5)
+            Divider().overlay(.gray)
             
-            DatePicker("Date and Time",selection:$avm.timestamp, displayedComponents: [.date,.hourAndMinute])
+            Text("Date and Time")
                 .font(.title3)
                 .bold()
+                .padding(.horizontal,15)
+                .padding(.vertical,5)
+
+            DatePicker("Date and Time",selection:$vm.timestamp, displayedComponents: [.date,.hourAndMinute])
+                .font(.title3)
+                .bold()
+                .labelsHidden()
             
                 .padding(.horizontal,15)
                 .padding(.vertical,5)
-            
-            HStack{
+            Divider().overlay(.gray)
+
                 Text("Event Description")
                     .font(.title3)
                     .bold()
                     .padding(.horizontal,15)
                     .padding(.vertical,15)
-            }
             
-            TextField("", text:$avm.description, axis:.vertical)
+            
+            TextField("Enter Event Description", text:$vm.description, axis:.vertical)
                 .padding(.horizontal,15)
-            Text("_____________________________________________")
+            Divider().overlay(.gray)
             Spacer()
             HStack{
                 Spacer()
                 Button{
+                    Task{
+                        try await EventService.shared.createEvent(title: vm.title, description: vm.description, timestamp: vm.timestamp, location: vm.location, uiImage:vm.uiImage)
+                    }
                     
                 }label:{
-                    ZStack{
-                        RoundedRectangle(cornerRadius:10)
-                            .stroke(Color.cyan, lineWidth:1)
-                            .frame(width:200,height:50)
                         Text("Create Event")
-                            .font(.title)
-                            
-                            .bold()
-                    }
+                        .font(.title3)
+                                  .fontWeight(.semibold)
+                                  .padding(.horizontal, 28)
+                                  .padding(.vertical, 8)
+                                  .overlay(
+                                       RoundedRectangle(cornerRadius: 9)
+                                            .stroke(.cyan, lineWidth: 1)
+                                   )
+                        }
+                        .buttonStyle(.plain)
+                    
                     
                 }
                 .padding(.horizontal)
@@ -107,7 +118,7 @@ struct AddEventView: View {
             .toolbar{
                 ToolbarItem(placement:.topBarLeading){
                     Button{
-                        
+                        dismiss()
                     }label:{
                         Text("Cancel")
                     }
@@ -115,13 +126,14 @@ struct AddEventView: View {
                     }
                 }
                 .navigationTitle(Text("Create Event"))
+                .navigationBarTitleDisplayMode(.inline)
                           
             }
         }
         
        
                       
-    }
+    
 
 
 

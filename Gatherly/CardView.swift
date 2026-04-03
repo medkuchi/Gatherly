@@ -12,34 +12,47 @@ struct CardView: View {
     
     var body: some View {
         
-            HStack{
-                ZStack{
+               // VStack{
                     VStack(alignment:.leading){
                         
-                        Image("Sunset.png")
-                            .resizable()
-                            .frame(width: 200, height: 150)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                        VStack(alignment:.leading){
-                          
-                                Text("Title")
-                                Text("Date")
-                                    .foregroundStyle(.secondary)
-                            //.background(.regularMaterial)
-                                .frame(width:200, height:50)
-                            
+                        if let imageEvent = event.image_url {
+                            // checks to see if image_url is actually a URL
+                            if let url = URL(string: imageEvent) {
+                                AsyncImage(url: url) { phase in
+                                    switch phase {
+                                    // when loading, it shows spinner (ProgressView())
+                                    case .empty:
+                                        ProgressView()
+                                    // if loads successfully, shows image, sets it to resizable, and is scaled to Fit
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .scaledToFit()
+                                    // if loading the image fails, show gray box
+                                    case .failure:
+                                        Rectangle()
+                                        .foregroundStyle(.gray)
+                                    @unknown default:
+                                        EmptyView()
+                                    }
+                                }
+                            }
+                        } else {
+                                Rectangle()
+                                    .foregroundStyle(.gray)
                         }
+                        
                     }
-                    
+                    .padding()
                     .background(.regularMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                     
+                    
                 }
             
-            Spacer()
-        }
+        //}
         
-    }
+    
 }
 
 #Preview {
