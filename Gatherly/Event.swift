@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreLocation
 
 struct Event: Hashable, Identifiable, Codable{
     var id: String?
@@ -19,6 +20,12 @@ struct Event: Hashable, Identifiable, Codable{
     // only used for encoding for POST or PUT requests
     var image: String?
     var timestamp: Date
+}
+
+struct EventAnnotation: Identifiable{
+    var id:String
+    var event: Event
+    var coordinate: CLLocationCoordinate2D
 }
 
 extension Event {

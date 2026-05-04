@@ -14,6 +14,10 @@ struct ContentView: View {
                     .tabItem {
                         Label("Home", systemImage: "house")
                     }
+                EventMapView()
+                    .tabItem {
+                        Label("Map", systemImage: "map")
+                    }
                 ProfileView()
                     .tabItem {
                         Label("Profile", systemImage: "person.fill")

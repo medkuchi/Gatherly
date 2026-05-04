@@ -28,10 +28,13 @@ struct CardView: View {
                                         image
                                             .resizable()
                                             .scaledToFit()
+                                            .frame(height:120)
+                                            .clipped()
                                     // if loading the image fails, show gray box
                                     case .failure:
                                         Rectangle()
                                         .foregroundStyle(.gray)
+                                        .frame(height:120)
                                     @unknown default:
                                         EmptyView()
                                     }
@@ -40,10 +43,20 @@ struct CardView: View {
                         } else {
                                 Rectangle()
                                     .foregroundStyle(.gray)
+                                    .frame(height:120)
                         }
+                        Text(event.title)
+                            .bold()
+                            .padding(.horizontal, 10)
+                            .padding(.top, 10)
+                        
+                        Text(event.timestamp, format: .dateTime.month(.abbreviated).day().year())
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 10)
+                            .padding(.bottom,10)
+                            
                         
                     }
-                    .padding()
                     .background(.regularMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                     
