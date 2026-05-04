@@ -18,7 +18,9 @@ struct ContentView: View {
                     .tabItem {
                         Label("Map", systemImage: "map")
                     }
-                ProfileView()
+                NavigationStack{
+                    ProfileView()
+                }
                     .tabItem {
                         Label("Profile", systemImage: "person.fill")
                     }

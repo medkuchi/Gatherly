@@ -47,6 +47,10 @@ struct HomeView: View {
                             }
                         }
                     }
+                    .refreshable {
+                        await vm.fetchEvents()
+                        //Edited events were not shwoing up because the page wasnt being refreshed so added this so it fetches events again. On appear wasnt working either.
+                    }
                 }
             }
             
@@ -56,7 +60,7 @@ struct HomeView: View {
             .searchable(text: $vm.searchfor)
             .alert("Failed to Fetch Events", isPresented: $vm.isError){
                 Button("OK", role: .cancel){}
-            }message:{
+            } message:{
                 Text(vm.errorString)
             }
         }

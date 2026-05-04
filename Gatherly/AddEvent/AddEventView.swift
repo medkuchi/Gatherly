@@ -129,7 +129,7 @@ struct AddEventView: View {
             
             } //VStack ends
             .toolbar{
-                ToolbarItem(placement:.topBarLeading){
+                ToolbarItem(placement:.topBarTrailing){
                     Button{
                         dismiss()
                     }label:{

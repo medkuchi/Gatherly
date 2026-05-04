@@ -8,6 +8,7 @@
 import Foundation
 import PhotosUI
 import _PhotosUI_SwiftUI
+import SwiftData
 
 @Observable
 class ProfileViewModel {
@@ -22,5 +23,12 @@ class ProfileViewModel {
     
     func filterEvents() {
         // doesn't need to work for now
+    }
+    
+    func loadImage(profile:UserProfile, modelContext:ModelContext) async{
+        if let data = try? await selectedPhoto?.loadTransferable(type: Data.self){
+            profile.userPicture = data
+            try? modelContext.save()
+        }
     }
 }

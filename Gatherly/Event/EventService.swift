@@ -98,7 +98,7 @@ class EventService {
         request.httpBody = try? encoder.encode(body)
         
         let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 201 else {
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
             print("Failed to edit event")
             return
         }

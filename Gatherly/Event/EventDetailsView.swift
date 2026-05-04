@@ -6,10 +6,12 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct EventDetailsView: View {
     @State private var isShowingDialog = false
     @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) private var modelContext
     let event:Event
     var body: some View {
         
@@ -29,7 +31,8 @@ struct EventDetailsView: View {
                         case .success(let image):
                             image
                                 .resizable()
-                                .scaledToFit()
+                                .scaledToFill()
+                                .frame(maxWidth:.infinity)
                         // if loading the image fails, show gray box
                         case .failure:
                             Rectangle()
@@ -52,14 +55,14 @@ struct EventDetailsView: View {
             
             
             HStack{
-                Text("Aug 6,2025")
+                Text(event.timestamp, format: .dateTime.month(.abbreviated).day().year())
                     .foregroundStyle(.secondary)
                     .padding(.leading, 10)
                 Image(systemName:"circle.fill")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .padding(.leading,10)
-                Text("1:00 PM")
+                Text(event.timestamp, format: .dateTime.hour().minute())
                     .foregroundStyle(.secondary)
                     .padding(.leading, 10)
                     .padding(.vertical,3)
@@ -73,17 +76,21 @@ struct EventDetailsView: View {
             Text("Description")
                 .font(.title3)
                 .padding(.vertical,5)
-                .padding(.leading,5)
+                .padding(.leading,10)
             Text("\(event.description)")
                 .foregroundStyle(.secondary)
+                .padding(.leading,10)
             VStack{
                 Spacer()
                 HStack{
                     Spacer()
-                    Button{
+                    Button {
+                        let rsvp = RSVPedEvent(id: event.id ?? UUID().uuidString,  title: event.title, location: event.location, creatorPid: event.creatorPid, eventDescription: event.description, timestamp: event.timestamp, image_url: event.image_url)
+                        modelContext.insert(rsvp)
+                        try? modelContext.save()
                         dismiss()
                         
-                    }label:{
+                    } label: {
                         ZStack{
                             
                             Text("RSVP")
@@ -120,10 +127,7 @@ struct EventDetailsView: View {
             
             ToolbarItem(placement:.topBarTrailing){
                 Button{
-                    Task{
-                        try await EventService.shared.deleteEvent(id:event.id ?? "")
-                        isShowingDialog=true
-                    }
+                    isShowingDialog = true
                 }label:{
                     Image(systemName:"ellipsis")}
                 //.foregroundStyle(.white)
@@ -135,7 +139,11 @@ struct EventDetailsView: View {
                 EditEventView(event: event)
             }
             Button("Delete Event", role:.destructive){
-
+                Task{
+                    try await EventService.shared.deleteEvent(id:event.id ?? "")
+                    dismiss()
+                }
+                
             }
         } message: {
             Text("Make changes to your event")

@@ -28,7 +28,8 @@ struct MapDetailView: View {
                         case .success(let image):
                             image
                                 .resizable()
-                                .scaledToFit()
+                                .scaledToFill()
+                                .frame(maxWidth:.infinity)
                         // if loading the image fails, show gray box
                         case .failure:
                             Rectangle()
@@ -51,14 +52,14 @@ struct MapDetailView: View {
             
             
             HStack{
-                Text("Aug 6,2025")
+                Text(event.timestamp, format: .dateTime.month(.abbreviated).day().year())
                     .foregroundStyle(.secondary)
                     .padding(.leading, 10)
                 Image(systemName:"circle.fill")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .padding(.leading,10)
-                Text("1:00 PM")
+                Text(event.timestamp, format: .dateTime.hour().minute())
                     .foregroundStyle(.secondary)
                     .padding(.leading, 10)
                     .padding(.vertical,3)
@@ -72,7 +73,7 @@ struct MapDetailView: View {
             Text("Description")
                 .font(.title3)
                 .padding(.vertical,5)
-                .padding(.leading,5)
+                .padding(.leading,15)
             Text("\(event.description)")
                 .foregroundStyle(.secondary)
             VStack{
