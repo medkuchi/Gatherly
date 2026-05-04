@@ -88,7 +88,6 @@ struct EventDetailsView: View {
                             
                             Text("RSVP")
                                 .font(.title)
-                                .foregroundStyle(.white)
                                 .bold()
                                 .clipShape(RoundedRectangle(cornerRadius:20))
                                 .overlay(
@@ -112,12 +111,10 @@ struct EventDetailsView: View {
         .toolbar{
             ToolbarItem(placement:.topBarLeading){
                 Button{
-                    
+                    dismiss()
                 }
                 label:{
                     Image(systemName:"chevron.left") //add .topBarTrailing
-                        //.foregroundStyle(.white)
-                        .font(.title)
                 }
             }
             
@@ -130,17 +127,18 @@ struct EventDetailsView: View {
                 }label:{
                     Image(systemName:"ellipsis")}
                 //.foregroundStyle(.white)
-                .font(.title)
         
             }
         }
-        .confirmationDialog("Delete", isPresented: $isShowingDialog){
+        .confirmationDialog("Advanced Actions", isPresented: $isShowingDialog, titleVisibility: .visible) {
             NavigationLink("Edit Event"){
-                EditEventView()
+                EditEventView(event: event)
             }
             Button("Delete Event", role:.destructive){
-                        
+
             }
+        } message: {
+            Text("Make changes to your event")
         }
         .navigationTitle("Event Details")
         .navigationBarTitleDisplayMode(.inline)

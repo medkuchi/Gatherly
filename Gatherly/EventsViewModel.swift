@@ -6,35 +6,34 @@
 //
 
 import Foundation
+import Observation
 
 @Observable
-class EventsViewModel{
-    var events:[Event]=[]
-    var searchfor:String = ""
-    var filteredEventIndices:[Int] {
+class EventsViewModel {
+    var events: [Event] = []
+    var loadingState: LoadingState = .idle
+    var searchfor: String = ""
+    var filteredEventIndices: [Int] {
         events.indices.filter { i in
-        searchfor.isEmpty || events[i].title.localizedCaseInsensitiveContains(searchfor)
+            searchfor.isEmpty || events[i].title.localizedCaseInsensitiveContains(searchfor)}
     }
-    }
-        func fetchEvents() async -> [Event] { //throws was here
-            guard let url = URL(string: "https://gatherly-backend-q9vm.onrender.com/events") else {
-                return events
-            }
+    var isError: Bool = false
+    var errorString: String = ""
+
+    func fetchEvents() async {
+        loadingState = .loading
+        do {
+            let fetched = try await EventService.shared.fetchEvents()
+          events = fetched
+          loadingState = .success
+        } catch let error as ErrorType {
+            loadingState = .failed(error)
+            isError = true
+            errorString = error.localizedDescription
             
-            do{
-                let (data,_) = try await URLSession.shared.data(from: url)
-                let decoder=JSONDecoder()
-                decoder.dateDecodingStrategy = .iso8601
-                let decodedresponse=try decoder.decode(EventResponse.self, from:data)
-                events=decodedresponse.events
-                
-                return events
-                
-            }catch{
-                print("Unable to fetch events")
-            }
-            return events
+        } catch {
+            loadingState = .failed(.unknown)
         }
-       
     }
+}
 

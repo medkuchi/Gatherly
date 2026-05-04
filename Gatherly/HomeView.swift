@@ -8,48 +8,102 @@
 import SwiftUI
 
 struct HomeView: View {
-    @State var events: [Event] = []
-    @State private var vm=EventsViewModel()
+    @Bindable var vm: EventsViewModel
+    let columns = [GridItem(.flexible(), spacing: 15), GridItem(.flexible(), spacing: 15)]
+    
     var body: some View {
         NavigationStack{
             VStack{
-                
-                let columns = [GridItem(.flexible(), spacing: 15), GridItem(.flexible(), spacing: 15)]
-                Button{
-                    AddEventView()
-                }label:{
-                    Text("+ Create Event")
-                }
-                ScrollView{
-                    LazyVGrid(columns: columns, spacing:15){
-                        ForEach(vm.filteredEventIndices,id: \.self) { index in
-                            NavigationLink{
-                                EventDetailsView(event:vm.events[index])
-                            }label:{
-                                CardView(event:vm.events[index])
+                switch vm.loadingState {
+                case .loading:
+                    ProgressView("Loading events...")
+                case .failed(let errorType):
+                    ContentUnavailableView {
+                        Label("Something went wrong", systemImage: "x.circle.fill")
+                    } description: {
+                        Text(errorType.localizedDescription)
+                    }
+                case .idle, .success:
+                    HStack{
+                        Spacer()
+                        NavigationLink{
+                            AddEventView()
+                        }label:{
+                            Text("+ Create Event")
+                        }
+                        
+                    }
+                    .padding(.trailing,15)
+                    
+                    
+                    ScrollView {
+                        LazyVGrid(columns: columns, spacing: 15) {
+                            ForEach(vm.filteredEventIndices, id: \.self) { index in
+                                NavigationLink {
+                                    EventDetailsView(event: vm.events[index])
+                                } label: {
+                                    CardView(event: vm.events[index])
+                                }
                             }
                         }
                     }
-                    
-                    //.navigationTitle("Home")
-                    .task {
-                        do {
-                            vm.events=try await vm.fetchEvents()
-                        } catch {
-                            print("there was an error: \(error.localizedDescription)")
-                        }
-                    }
-                    .searchable(text: $vm.searchfor)
                 }
             }
+            
+            .task {
+                await vm.fetchEvents()
+            }
+            .searchable(text: $vm.searchfor)
+            .alert("Failed to Fetch Events", isPresented: $vm.isError){
+                Button("OK", role: .cancel){}
+            }message:{
+                Text(vm.errorString)
+            }
         }
+        }
+       
+        
     }
-}
+
+
+
+//var body: some View {
+//    NavigationStack{
+//        VStack{
+//            
+//            let columns = [GridItem(.flexible(), spacing: 15), GridItem(.flexible(), spacing: 15)]
+//            NavigationLink{
+//                AddEventView()
+//            }label:{
+//                Text("+ Create Event")
+//            }
+//            ScrollView{
+//                LazyVGrid(columns: columns, spacing:15){
+//                    ForEach(vm.filteredEventIndices,id: \.self) { index in
+//                        NavigationLink{
+//                            EventDetailsView(event:vm.events[index])
+//                        }label:{
+//                            CardView(event:vm.events[index])
+//                        }
+//                    }
+//                }
+//                
+//                //.navigationTitle("Home")
+//                .task {
+//                        await vm.fetchEvents()
+//                    }
+//                }
+//                .searchable(text: $vm.searchfor)
+//            }
+//        }
+//    }
+//}
+
 
 
 #Preview {
     NavigationStack{
-        HomeView()
+        HomeView(vm:EventsViewModel())
             .preferredColorScheme(.dark)
     }
 }

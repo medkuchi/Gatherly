@@ -6,27 +6,25 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct ProfileView: View {
     @Bindable var vm = ProfileViewModel()
+    
     var body: some View {
         VStack{
-            
-                Button{
+            PhotosPicker(selection:$vm.selectedPhoto,matching: .images){
                     
-                }
-                label:{
-                        
-                        Image(systemName: "plus")
-                             .font(.largeTitle)
-                             .padding(28)
-                             .background(
-                                  Circle()
-                                       .fill(.thinMaterial)
-                             )
-                             .frame(width: 100)
-                    
-                    .padding(.horizontal,15)
+                    Image(systemName: "plus")
+                         .font(.largeTitle)
+                         .padding(28)
+                         .background(
+                              Circle()
+                                   .fill(.thinMaterial)
+                         )
+                         .frame(width: 100)
+                
+                .padding(.horizontal,15)
                 }
             
             .padding(10)

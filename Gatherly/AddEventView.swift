@@ -14,107 +14,120 @@ struct AddEventView: View {
     
     var body: some View {
         VStack(alignment:.leading){
-            HStack{
-                Text("Upload Cover Photo")
-                    .bold()
-                    .font(.title3)
+            switch vm.loadingState {
+            case .loading:
+                ProgressView("Loading Events...")
+            case .failed(let errorType):
+                ContentUnavailableView{
+                    Label("Something went wrong",systemImage: "x.circle.fill")
+                } description: {
+                    Text(errorType.localizedDescription)
+                }
+            case .idle, .success:
+                HStack{
+                    Text("Upload Cover Photo")
+                        .bold()
+                        .font(.title3)
+                        .padding(.horizontal,15)
+                        .padding(.vertical,15)
+                    Spacer()
+                }
+                HStack {
+                    PhotosPicker(selection: $vm.selectedPhoto, matching: .images) {
+                        Image(systemName: "plus")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 35)
+                        .padding(20)
+                        .background(.thinMaterial)
+                    }
                     .padding(.horizontal,15)
-                    .padding(.vertical,15)
-                Spacer()
-            }
-            HStack {
-                PhotosPicker(selection: $vm.selectedPhoto, matching: .images) {
-                    Image(systemName: "plus")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 35)
-                    .padding(20)
-                    .background(.thinMaterial)
+                    .task(id: vm.selectedPhoto) {
+                        await vm.loadImage()
+                    }
+                    vm.image?
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 75)
                 }
-                .task(id: vm.selectedPhoto) {
-                    await vm.loadImage()
-                }
-                vm.image?
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 75)
-            }
-            
-            Text("Event Title")
-                .font(.title3)
-                .bold()
-                .padding(.horizontal,15)
-                .padding(.vertical,5)
-            
-            TextField("Enter event title", text: $vm.title)
-                .padding(.horizontal,15)
-                .padding(.vertical,5)
-            Divider().overlay(.gray)
-                Text("Location")
+                
+                Text("Event Title")
                     .font(.title3)
                     .bold()
                     .padding(.horizontal,15)
                     .padding(.vertical,5)
-            
-            
-            TextField("Choose location of event", text: $vm.location)
-                .padding(.horizontal,15)
-                .padding(.vertical,5)
-            Divider().overlay(.gray)
-            
-            Text("Date and Time")
-                .font(.title3)
-                .bold()
-                .padding(.horizontal,15)
-                .padding(.vertical,5)
-
-            DatePicker("Date and Time",selection:$vm.timestamp, displayedComponents: [.date,.hourAndMinute])
-                .font(.title3)
-                .bold()
-                .labelsHidden()
-            
-                .padding(.horizontal,15)
-                .padding(.vertical,5)
-            Divider().overlay(.gray)
-
-                Text("Event Description")
+                
+                TextField("Enter event title", text: $vm.title)
+                    .padding(.horizontal,15)
+                    .padding(.vertical,5)
+                Divider().overlay(.gray)
+                    Text("Location")
+                        .font(.title3)
+                        .bold()
+                        .padding(.horizontal,15)
+                        .padding(.vertical,5)
+                
+                
+                TextField("Choose location of event", text: $vm.location)
+                    .padding(.horizontal,15)
+                    .padding(.vertical,5)
+                Divider().overlay(.gray)
+                
+                Text("Date and Time")
                     .font(.title3)
                     .bold()
                     .padding(.horizontal,15)
-                    .padding(.vertical,15)
-            
-            
-            TextField("Enter Event Description", text:$vm.description, axis:.vertical)
-                .padding(.horizontal,15)
-            Divider().overlay(.gray)
-            Spacer()
-            HStack{
-                Spacer()
-                Button{
-                    Task{
-                        try await EventService.shared.createEvent(title: vm.title, description: vm.description, timestamp: vm.timestamp, location: vm.location, uiImage:vm.uiImage)
-                    }
-                    
-                }label:{
-                        Text("Create Event")
+                    .padding(.vertical,5)
+
+                DatePicker("Date and Time",selection:$vm.timestamp, displayedComponents: [.date,.hourAndMinute])
+                    .font(.title3)
+                    .bold()
+                    .labelsHidden()
+                
+                    .padding(.horizontal,15)
+                    .padding(.vertical,5)
+                Divider().overlay(.gray)
+
+                    Text("Event Description")
                         .font(.title3)
-                                  .fontWeight(.semibold)
-                                  .padding(.horizontal, 28)
-                                  .padding(.vertical, 8)
-                                  .overlay(
-                                       RoundedRectangle(cornerRadius: 9)
-                                            .stroke(.cyan, lineWidth: 1)
-                                   )
-                        }
-                        .buttonStyle(.plain)
-                    
-                    
-                }
-                .padding(.horizontal)
+                        .bold()
+                        .padding(.horizontal,15)
+                        .padding(.vertical,15)
+                
+                
+                TextField("Enter Event Description", text:$vm.description, axis:.vertical)
+                    .padding(.horizontal,15)
+                Divider().overlay(.gray)
                 Spacer()
+                HStack{
+                    Spacer()
+                    Button{
+                        Task{
+                            try await vm.createEvent()
+                            dismiss()
+                        }
+                        
+                    }label:{
+                            Text("Create Event")
+                            .font(.title3)
+                                      .fontWeight(.semibold)
+                                      .padding(.horizontal, 28)
+                                      .padding(.vertical, 8)
+                                      .overlay(
+                                           RoundedRectangle(cornerRadius: 9)
+                                                .stroke(.cyan, lineWidth: 1)
+                                       )
+                            }
+                            .buttonStyle(.plain)
+                        
+                        
+                    }
+                    .padding(.horizontal)
+                    Spacer()
             }
-            Spacer()
             
+            
+            } //VStack ends
             .toolbar{
                 ToolbarItem(placement:.topBarLeading){
                     Button{
@@ -127,7 +140,11 @@ struct AddEventView: View {
                 }
                 .navigationTitle(Text("Create Event"))
                 .navigationBarTitleDisplayMode(.inline)
-                          
+                .alert("Failed to Add Event", isPresented: $vm.isError){
+                    Button("OK", role: .cancel){}
+                }message:{
+                    Text(vm.errorString)
+                }
             }
         }
         

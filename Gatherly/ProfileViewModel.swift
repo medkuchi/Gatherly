@@ -6,11 +6,14 @@
 //
 
 import Foundation
+import PhotosUI
+import _PhotosUI_SwiftUI
 
 @Observable
 class ProfileViewModel {
     let tabs = ["My Events", "Past Events"]
     var selectedTab: String = "My Events"
+    var selectedPhoto: PhotosPickerItem?
 
     func selectTab(tab: String) {
         selectedTab = tab
